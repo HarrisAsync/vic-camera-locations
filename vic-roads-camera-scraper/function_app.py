@@ -41,14 +41,14 @@ def main(myTimer: func.TimerRequest) -> None:
 
     if (data["link_PHST"] == "" and data["link_SPD"] == ""):
         return
-
+    
     try:
         # Post to endpoint
+        logging.info(f"Post Data: {data}")
         response = requests.post(endpoint, json=data)
         logging.info(f"Post Response: {response}")
     except requests.exceptions.RequestException as e:
         logging.error(f"Error while posting: {e}")
-
 
 def get_sheet_link(url, pattern):
     try:
