@@ -38,12 +38,16 @@ def main(myTimer: func.TimerRequest) -> None:
         "link_SPD": link_SPD,
         "public_key": public_key
     }
+
+    if (data["link_PHST"] == "" and data["link_SPD"] == ""):
+        return
+
+    # Post to endpoint
     response = requests.post(endpoint, json=data)
     logging.info(f"Post Response: {response}")
 
 def get_sheet_link(url, pattern):
     try:
-        
         response = requests.get(url)
         if response.status_code == 200:
             soup = BeautifulSoup(response.text, 'html.parser')
