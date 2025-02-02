@@ -136,3 +136,27 @@ __azurite_db*__.json
 
 # VS Code
 .vscode/
+
+# Ignore virtual environments
+backend/venv/
+backend/.env
+
+# Ignore Python cache files
+backend/__pycache__/
+backend/*.pyc
+backend/*.pyo
+backend/*.pyd
+
+# Ignore logs and temporary files
+backend/logs/
+backend/*.log
+
+# Ignore IDE and editor settings
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
