@@ -8,8 +8,8 @@ import re
 
 app = func.FunctionApp()
 
-@app.function_name(name="MonthlyTrigger")
-@app.schedule(schedule="0 0 1 * * *", arg_name="myTimer", run_on_startup=True, use_monitor=True)
+@app.function_name(name="EveryTwoDaysTrigger")
+@app.schedule(schedule="0 0 */2 * * *", arg_name="myTimer", run_on_startup=True, use_monitor=True)
 def main(myTimer: func.TimerRequest) -> None:
     utc_timestamp = datetime.datetime.utcnow().isoformat()
     logging.info(f"Function triggered at {utc_timestamp}")
