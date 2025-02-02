@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from starlette.responses import FileResponse
 import requests
 import pandas as pd
+import os
 
 app = FastAPI()
 
@@ -30,28 +31,7 @@ def read_excel_rows(file_path: str):
 
 @app.get("/")
 async def hello_world():
-    return FileResponse("static/index.html")
-
-@app.post("/resource-links")
-async def resource_links(request_data: RequestData):
-    phst_filename = "downloaded_PHST_file.xlsx"
-    spd_filename = "downloaded_SPD_file.xlsx"
-    try:
-        if request_data.link_PHST:
-            phst_file_path = download_file(request_data.link_PHST, phst_filename)
-            phst_rows = read_excel_rows(phst_file_path)
-        if request_data.link_SPD:
-            spd_file_path = download_file(request_data.link_SPD, spd_filename)
-            spd_rows = read_excel_rows(spd_file_path)
-
-        return {
-            "message": "Files downloaded and read successfully",
-            "files": {
-                "PHST": phst_rows if request_data.link_PHST else "No PHST file",
-                "SPD": spd_rows if request_data.link_SPD else "No SPD file"
-            }
-        }
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(current_dir, 'static', 'index.html')
+    print(file_path)
+    return FileResponse(file_path)
