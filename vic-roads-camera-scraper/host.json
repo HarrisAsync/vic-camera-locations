@@ -1,5 +1,7 @@
 {
   "version": "2.0",
+  "extensions": {
+  },
   "logging": {
     "applicationInsights": {
       "samplingSettings": {
