@@ -3,6 +3,8 @@ import logging
 import azure.functions as func
 import requests
 from bs4 import BeautifulSoup
+import os
+import re
 
 app = func.FunctionApp()
 
@@ -12,24 +14,47 @@ def main(myTimer: func.TimerRequest) -> None:
     utc_timestamp = datetime.datetime.utcnow().isoformat()
     logging.info(f"Function triggered at {utc_timestamp}")
 
-    # Web scraping code
-    url = 'https://www.vic.gov.au/mobile-phone-and-seatbelt-detection-camera-locations'
+    # Get the URLs from the settings
+    base_url = os.getenv('Base_Url')
+    mobile_PHST_url = base_url + os.getenv('Mobile_Phone_Seatbelt_Camera_Url')
+    mobile_SPD_url = base_url + os.getenv('Mobile_Speed_Camera_Url')
+    public_key = os.getenv('Public_Key')
+    endpoint = os.getenv('Backend_Endpoint')
+
+    # Define regex patterns
+    pattern_mobile_PHST = r"(?i).*(DDS|location|camera).*\.xlsx$"
+    pattern_mobile_SPD = r"(?i).*(location|camera).*\.xlsx$"
+
+    # Get the excel sheet from the urls
+    link_PHST = base_url + get_sheet_link(mobile_PHST_url, pattern_mobile_PHST)
+    link_SPD = base_url + get_sheet_link(mobile_SPD_url, pattern_mobile_SPD)
+
+    logging.info(f"link_PHST: {link_PHST}")
+    logging.info(f"link_SPD: {link_SPD}")
+
+    # Post links to enpoint
+    data = {
+        "link_PHST": link_PHST,
+        "link_SPD": link_SPD,
+        "public_key": public_key
+    }
+    response = requests.post(endpoint, json=data)
+    logging.info(f"Post Response: {response}")
+
+def get_sheet_link(url, pattern):
     try:
-        # Send HTTP request to the website
+        
         response = requests.get(url)
-
         if response.status_code == 200:
-            # Parse the HTML content
             soup = BeautifulSoup(response.text, 'html.parser')
-
-            # Example: Extract all headings <h1> from the page
-            headings = soup.find_all('h1')
-
-            # Log the headings (you can also save them to a file or database)
-            for heading in headings:
-                logging.info(f"Found heading: {heading.text}")
+            links = soup.find_all('a')
+            for link in links:
+                href = link['href']
+                match = re.search(pattern, href)
+                if match:
+                    return href
         else:
             logging.error(f"Failed to retrieve the webpage. Status code: {response.status_code}")
-
     except requests.exceptions.RequestException as e:
         logging.error(f"Error while fetching the website: {e}")
+    return ""

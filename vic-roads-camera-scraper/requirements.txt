@@ -5,3 +5,5 @@
 azure-functions
 requests
 beautifulsoup4
+os
+re
