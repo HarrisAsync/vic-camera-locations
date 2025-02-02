@@ -1,64 +1,75 @@
-import datetime
-import logging
-import azure.functions as func
-import requests
-from bs4 import BeautifulSoup
-import os
-import re
+# Docs for the Azure Web Apps Deploy action: https://github.com/azure/functions-action
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+# More info on Python, GitHub Actions, and Azure Functions: https://aka.ms/python-webapps-actions
 
-app = func.FunctionApp()
+name: Build and deploy Python project to Azure Function App - vic-camera-location-scraper
 
-@app.function_name(name="EveryTwoDaysTrigger")
-@app.schedule(schedule="0 0 */2 * * *", arg_name="myTimer", run_on_startup=True, use_monitor=True)
-def main(myTimer: func.TimerRequest) -> None:
-    utc_timestamp = datetime.datetime.utcnow().isoformat()
-    logging.info(f"Function triggered at {utc_timestamp}")
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
-    # Get the URLs from the settings
-    base_url = os.getenv('Base_Url')
-    mobile_PHST_url = base_url + os.getenv('Mobile_Phone_Seatbelt_Camera_Url')
-    mobile_SPD_url = base_url + os.getenv('Mobile_Speed_Camera_Url')
-    public_key = os.getenv('Public_Key')
-    endpoint = os.getenv('Backend_Endpoint')
+env:
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: 'vic-roads-camera-scraper' # set this to the folder where your Azure Function app code is located
+  PYTHON_VERSION: '3.11' # set this to the python version to use (supports 3.6, 3.7, 3.8)
 
-    # Define regex patterns
-    pattern_mobile_PHST = r"(?i).*(DDS|location|camera).*\.xlsx$"
-    pattern_mobile_SPD = r"(?i).*(location|camera).*\.xlsx$"
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    # Get the excel sheet from the urls
-    link_PHST = base_url + get_sheet_link(mobile_PHST_url, pattern_mobile_PHST)
-    link_SPD = base_url + get_sheet_link(mobile_SPD_url, pattern_mobile_SPD)
+      - name: Setup Python version
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
 
-    logging.info(f"link_PHST: {link_PHST}")
-    logging.info(f"link_SPD: {link_SPD}")
+      - name: Create and start virtual environment
+        run: |
+          python -m venv venv
+          source venv/bin/activate
 
-    # Post links to enpoint
-    data = {
-        "link_PHST": link_PHST,
-        "link_SPD": link_SPD,
-        "public_key": public_key
-    }
+      - name: Install dependencies
+        run: pip install -r vic-roads-camera-scraper/requirements.txt
 
-    if (data["link_PHST"] == "" and data["link_SPD"] == ""):
-        return
+      # Optional: Add step to run tests here
 
-    # Post to endpoint
-    response = requests.post(endpoint, json=data)
-    logging.info(f"Post Response: {response}")
+      - name: Zip artifact for deployment
+        run: zip -r release.zip vic-roads-camera-scraper/*
 
-def get_sheet_link(url, pattern):
-    try:
-        response = requests.get(url)
-        if response.status_code == 200:
-            soup = BeautifulSoup(response.text, 'html.parser')
-            links = soup.find_all('a')
-            for link in links:
-                href = link['href']
-                match = re.search(pattern, href)
-                if match:
-                    return href
-        else:
-            logging.error(f"Failed to retrieve the webpage. Status code: {response.status_code}")
-    except requests.exceptions.RequestException as e:
-        logging.error(f"Error while fetching the website: {e}")
-    return ""
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-app
+          path: |
+            release.zip
+            !vic-roads-camera-scraper/venv/
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: 'Production'
+      url: ${{ steps.deploy-to-function.outputs.webapp-url }}
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: python-app
+
+      - name: Unzip artifact for deployment
+        run: unzip release.zip
+
+      - name: 'Deploy to Azure Functions'
+        uses: Azure/functions-action@v1
+        id: deploy-to-function
+        with:
+          app-name: 'vic-camera-location-scraper'
+          slot-name: 'Production'
+          package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_DDAC7D41529749F8A4E25A9028D84818 }}
+          scm-do-build-during-deployment: true
+          enable-oryx-build: true
