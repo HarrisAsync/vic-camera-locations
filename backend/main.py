@@ -5,4 +5,4 @@ app = FastAPI()
 
 @app.get("/")
 async def hello_world():
-    return FileResponse("static/index.html")
+    return FileResponse("./static/index.html")
