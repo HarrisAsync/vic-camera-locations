@@ -1,0 +1,1 @@
+CREATE TABLE cameras (id SERIAL PRIMARY KEY);
