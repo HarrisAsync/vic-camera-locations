@@ -1,37 +1,43 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from starlette.responses import FileResponse
-import requests
-import pandas as pd
+from backend.helpers import excel_reader
+from fastapi import FastAPI, HTTPException, Response, Request
+from starlette.status import HTTP_200_OK
 import os
+from helpers import download, security
+from models import CameraLinksPublicKey
+from fastapi.templating import Jinja2Templates
+from database import Database
 
 app = FastAPI()
+templates = Jinja2Templates(directory="package_docs")
+db = Database()
 
-class RequestData(BaseModel):
-    link_PHST: str
-    link_SPD: str
-    public_key: str
-
-def download_file(url: str, filename: str):
-    response = requests.get(url)
-    if response.status_code == 200:
-        with open(filename, "wb") as file:
-            file.write(response.content)
-        return filename
-    else:
-        raise HTTPException(status_code=404, detail=f"Failed to download {url}. Status code: {response.status_code}")
-
-def read_excel_rows(file_path: str):
+@app.post("/resource-links")
+async def resource_links(data: CameraLinksPublicKey):
     try:
-        df = pd.read_excel(file_path)
-        rows = df.to_dict(orient="records")
-        return rows
+        file_path = os.path.join("../data", "private_key.txt")
+        with file_path.open("r", encoding="utf-8") as file:
+            content = file.read()
+            if not security.verify_rsa_key_pair(data.public_key, content):
+                raise HTTPException(status_code=400, detail="Public Key is incorrect.")
+
+        f_temp_PHST = download.download_file(data.link_PHST)
+        f_temp_SPD = download.download_file(data.link_SPD)
+
+        PHST_rows = excel_reader.read_excel_rows(f_temp_PHST)
+        SPD_rows = excel_reader.read_excel_rows(f_temp_SPD)
+
+        os.remove(f_temp_PHST)
+        os.remove(f_temp_SPD)
+
+        # TODO: For PHST_rows SPD_rows & Use overpass service to get data
+
+        # TODO: Store in tables
+        
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error reading the Excel file: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve data: {str(e)}")
+
+    return Response(status_code=HTTP_200_OK)
 
 @app.get("/")
-async def hello_world():
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(current_dir, 'static', 'index.html')
-    print(file_path)
-    return FileResponse(file_path)
+async def main_page(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
