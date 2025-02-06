@@ -3,7 +3,7 @@ import sys
 import os
 import overpass
 import suburb
-from typing import Dict, List
+from typing import Dict, List, Tuple
 # Add parent directory to sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -11,10 +11,10 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from database import Database
 db = Database()
 
-def get_roads(names) -> List[Dict]:
+def get_roads(names) -> List[Tuple[str, str]]:
     # get all roads not in db
     roads = db.road.get_by_names(names)
-    found = {(r[0], r[1]) for r in roads}
+    found = {(r["name"], r["suburb"]) for r in roads}
 
 
     remaining_road_names = [r for r in names if r not in found]
@@ -40,6 +40,6 @@ def get_roads(names) -> List[Dict]:
         remaining_roads = overpass.get_roads(remaining_road_query, remaining_suburbs)
         db.road.add_many([{"name": k[0], "suburb": k[1], "points": points} for k, points in remaining_roads.items()])
     return db.road.get_by_names(names)
-
+print(get_roads([("South Road", "Hampton"), ("Hampton Street", "Brighton")]))
 
 

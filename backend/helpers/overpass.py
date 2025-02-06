@@ -47,7 +47,7 @@ def construct_suburb_query(suburbs, bbox=(-39.1590, 140.9617, -33.9806, 150.0133
     return query
 
 def process_suburb_results(results):
-    res = {}
+    res = []
     for element in results.get("elements", []):
         name = element.get("tags", {}).get("name", "Unknown")
         bounds = element.get("bounds", {})

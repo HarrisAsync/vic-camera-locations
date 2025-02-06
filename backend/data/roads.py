@@ -7,13 +7,14 @@ class Road:
 
     def get_by_name(self, name: str, suburb: str) -> Dict:
         """Fetch a suburb by name."""
-        query = "SELECT name, suburb, points FROM roads WHERE name = %s AND suburb ="
+        query = "SELECT id, name, suburb, points FROM roads WHERE name = %s AND suburb ="
         row = self.db.execute_query(query, (name, suburb,), fetch_one=True)
         if row:
             return {
-                "name": row[0],
-                "suburb": row[1],
-                "points": row[2]
+                "id": row[0],
+                "name": row[1],
+                "suburb": row[2],
+                "points": row[3]
             }
         return None
     
@@ -24,7 +25,7 @@ class Road:
         
         placeholders = ', '.join([str(entry) for entry in names])  # Generate placeholders for SQL query
         query = f"""
-            SELECT name, suburb, points 
+            SELECT id, name, suburb, points 
             FROM roads 
             WHERE (name, suburb) IN ({placeholders})
         """
@@ -33,9 +34,10 @@ class Road:
         
         return [
             {
-                "name": row[0],
-                "suburb": row[1],
-                "points": row[2]
+                "id": row[0],
+                "name": row[1],
+                "suburb": row[2],
+                "points": row[3]
             }
             for row in rows
         ] if rows else []
