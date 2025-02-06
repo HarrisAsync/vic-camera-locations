@@ -30,6 +30,8 @@ class Database:
         """Initialize models inside the database instance."""
         from data.suburbs import Suburb  # Import here to avoid circular import issues
         self.suburb = Suburb(self)
+        from data.roads import Road
+        self.road = Road(self)
 
     def execute_query(self, query, params=None, fetch_one=False, fetch_all=False):
         """Execute a query with optional fetching."""

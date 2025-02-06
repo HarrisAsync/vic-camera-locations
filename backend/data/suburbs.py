@@ -17,6 +17,30 @@ class Suburb:
                 "maxlat": row[4],
             }
         return None
+    
+    def get_by_names(self, names: List[str]) -> List[Dict]:
+        """Fetch multiple suburbs by a list of names."""
+        if not names:
+            return []
+        
+        placeholders = ', '.join([f"'{n}'" for n in names])  # Generate placeholders for SQL query
+        query = f"""
+            SELECT name, minlong, minlat, maxlong, maxlat 
+            FROM suburbs 
+            WHERE name IN ({placeholders})
+        """
+        rows = self.db.execute_query(query, tuple(names), fetch_all=True)
+        
+        return [
+            {
+                "name": row[0],
+                "minlong": row[1],
+                "minlat": row[2],
+                "maxlong": row[3],
+                "maxlat": row[4],
+            }
+            for row in rows
+        ] if rows else []
 
     def add(self, name: str, minlong: float, minlat: float, maxlong: float, maxlat: float):
         """Add a new suburb to the database."""
