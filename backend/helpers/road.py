@@ -40,6 +40,7 @@ def get_roads(names) -> List[Tuple[str, str]]:
         remaining_roads = overpass.get_roads(remaining_road_query, remaining_suburbs)
         db.road.add_many([{"name": k[0], "suburb": k[1], "points": points} for k, points in remaining_roads.items()])
     return db.road.get_by_names(names)
-print(get_roads([("South Road", "Hampton"), ("Hampton Street", "Brighton")]))
+if __name__ == "__main__":
+    print(get_roads([("South Road", "Hampton"), ("Hampton Street", "Brighton")]))
 
 

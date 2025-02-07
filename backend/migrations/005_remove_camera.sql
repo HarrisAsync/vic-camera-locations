@@ -1,0 +1,7 @@
+ALTER TABLE roads
+DROP COLUMN camera_type; 
+
+ALTER TABLE cameras
+ADD COLUMN camera_type INTEGER,
+ADD COLUMN road_id INTEGER,
+ADD CONSTRAINT FK_ROAD FOREIGN KEY (road_id) REFERENCES roads (id);
