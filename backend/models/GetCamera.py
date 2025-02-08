@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from collections import defaultdict
-from models.CameraTypeEnum import CameraType
+from .CameraTypeEnum import CameraType
 from typing import Any, List
 
 class GetCamera(BaseModel):

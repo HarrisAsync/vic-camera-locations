@@ -1,9 +1,7 @@
-import json
 import sys
 import os
-import overpass
 from typing import Dict, List
-from road import get_roads
+from .road import get_roads
 
 # Add parent directory to sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))

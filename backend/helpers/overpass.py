@@ -93,13 +93,13 @@ def in_suburb(point, suburb):
         return False
     return True
 
-if __name__ == "__main__":
-    data = [
-        {"name": "Marine Parade", "minlong": 144.970653, "minlat": -37.876291, "maxlong": 144.993262, "maxlat": -37.852189},
-        {"name": "Chapel Street", "minlong": 144.984201, "minlat": -37.8601785, "maxlong": 145.0123174, "maxlat": -37.845688},
-        {"name": "Hampton Street", "minlong": 144.992117, "minlat": -37.946992, "maxlong": 145.025241, "maxlat": -37.92871}
-    ]
-    # get_roads(data)
-    # print(get_roads(data))
-    print(construct_road_query(data))
-    # pprint.pprint(execute_overpass_query(q))
+# if __name__ == "__main__":
+#     data = [
+#         {"name": "Marine Parade", "minlong": 144.970653, "minlat": -37.876291, "maxlong": 144.993262, "maxlat": -37.852189},
+#         {"name": "Chapel Street", "minlong": 144.984201, "minlat": -37.8601785, "maxlong": 145.0123174, "maxlat": -37.845688},
+#         {"name": "Hampton Street", "minlong": 144.992117, "minlat": -37.946992, "maxlong": 145.025241, "maxlat": -37.92871}
+#     ]
+#     # get_roads(data)
+#     # print(get_roads(data))
+#     print(construct_road_query(data))
+#     # pprint.pprint(execute_overpass_query(q))

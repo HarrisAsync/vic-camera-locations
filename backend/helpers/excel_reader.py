@@ -1,5 +1,8 @@
 import pandas as pd
 from fastapi import HTTPException
+import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from models.CameraTypeEnum import CameraType
 
 def get_road_suburb_from_excel(file_path: str, type: CameraType):

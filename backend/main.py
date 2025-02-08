@@ -1,16 +1,17 @@
-from backend.helpers import excel_reader
 from fastapi import FastAPI, HTTPException, Response, Request
 from starlette.status import HTTP_200_OK
 import os
-from helpers import download, security, camera
-from models import CameraLinksPublicKey, GetCamera
+from .helpers import download, security, camera, excel_reader
+from .models.CameraLinksPublicKey import CameraLinksPublicKey
+from .models.GetCamera import GetCamera
+
 from fastapi.templating import Jinja2Templates
 from database import Database
 from models.CameraTypeEnum import CameraType
 
 app = FastAPI()
-templates = Jinja2Templates(directory="package_docs")
-db = Database()
+templates = Jinja2Templates(directory="static")
+# db = Database()
 
 @app.post("/resource-links")
 async def resource_links(data: CameraLinksPublicKey):
@@ -44,9 +45,9 @@ async def resource_links(data: CameraLinksPublicKey):
     return Response(status_code=HTTP_200_OK)
 
 @app.get("/get-cameras")
-async def get_cameras() -> list[GetCamera.GetCamera]:
+async def get_cameras() -> list[GetCamera]:
     try:
-        return camera.get_cameras()
+        return camera.get_cameras(None)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get cameras data: {str(e)}")
     

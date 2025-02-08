@@ -1,8 +1,8 @@
 import json
 import sys
 import os
-import overpass
-import suburb
+from .overpass import get_roads
+from .suburb import get_suburbs
 from typing import Dict, List, Tuple
 # Add parent directory to sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -21,7 +21,7 @@ def get_roads(names) -> List[Tuple[str, str]]:
     remaining_suburb_names = list({r[1] for r in remaining_road_names})
     remaining_suburbs = []
     if remaining_suburb_names != []:
-        remaining_suburbs = suburb.get_suburbs(remaining_suburb_names)
+        remaining_suburbs = get_suburbs(remaining_suburb_names)
     bbox = {s["name"]: s for s in remaining_suburbs}
 
     # get road data for remaining roads
@@ -37,7 +37,7 @@ def get_roads(names) -> List[Tuple[str, str]]:
     # get suburbs for remaining roads
     remaining_roads = []
     if remaining_road_query != [] and remaining_suburbs != []:
-        remaining_roads = overpass.get_roads(remaining_road_query, remaining_suburbs)
+        remaining_roads = get_roads(remaining_road_query, remaining_suburbs)
         db.road.add_many([{"name": k[0], "suburb": k[1], "points": points} for k, points in remaining_roads.items()])
     return db.road.get_by_names(names)
 if __name__ == "__main__":
