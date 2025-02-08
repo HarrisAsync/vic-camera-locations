@@ -1,18 +1,21 @@
 import pandas as pd
 from fastapi import HTTPException
-import os
-import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from models.CameraTypeEnum import CameraType
 
-def get_road_suburb_from_excel(file_path: str, type: CameraType):
+def get_road_suburb_from_excel(url: str, type: CameraType):
     road_suburb_list = []
     try:
-        df = pd.read_excel(file_path)
+        print(url)
+        # Use 'openpyxl' engine for .xlsx files
+        df = pd.read_excel(url, engine='openpyxl')
+        print("Downloaded")
+        print(df.head())
         column_names = list(df.columns)
-        for row in df.iterrows():
+        for index, row in df.iterrows():
+            # Get the values of the first two columns
             road_suburb = (row[column_names[0]], row[column_names[1]], type)
             road_suburb_list.append(road_suburb)
     except Exception as e:
+        print(e)
         raise HTTPException(status_code=500, detail=f"Error reading the Excel file: {str(e)}")
     return road_suburb_list
