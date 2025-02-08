@@ -25,8 +25,9 @@
         });
 
         // Fetch road data from the API
-        let response = await fetch("https://vic-camera-locations.onrender.com/get_cameras");
+        let response = await fetch(window.location.origin + "/get-cameras");
         let cameraData = await response.json();
+        console.log(cameraData)
 
         if (!cameraData || cameraData.length === 0) {
           console.error("No roads data received from API.");
@@ -45,11 +46,11 @@
 
         
         
-        for (var roadName of Object.keys(roads)) {
-          console.log(roadName)
-          console.log(roads[roadName])
+        for (let camera of cameraData) {
+          console.log(camera)
+          var lines = JSON.parse(camera.points)
           
-          roads[roadName].forEach(segment => {
+          lines.forEach(segment => {
             console.log(segment);
             // Create a polyline for the road and set its path
             var roadPolyline = new google.maps.Polyline({
