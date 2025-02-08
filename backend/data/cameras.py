@@ -8,15 +8,17 @@ class Camera:
     def get_all(self, type=None):
         """Fetch a suburb by name."""
         if type == None:
-            query = "SELECT cameras.id, camera_type, points FROM cameras JOIN roads on cameras.road_id = roads.id"
+            query = "SELECT cameras.id, camera_type, points, roads.name, roads.suburb FROM cameras JOIN roads on cameras.road_id = roads.id"
         else:
-            query = f"SELECT cameras.id, camera_type, points FROM cameras JOIN roads on cameras.road_id = roads.id WHERE camera_type = {int(type)}"
+            query = f"SELECT cameras.id, camera_type, points, roads.name, roads.suburb FROM cameras JOIN roads on cameras.road_id = roads.id WHERE camera_type = {int(type)}"
         rows = self.db.execute_query(query, fetch_one=False, fetch_all=True)
         return [
             {
                 "id": row[0],
                 "camera_type": row[1],
-                "points": row[2]
+                "points": row[2],
+                "road": row[3],
+                "suburb": row[4]
             }
             for row in rows
         ] if rows else []

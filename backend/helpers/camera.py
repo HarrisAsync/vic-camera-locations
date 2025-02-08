@@ -7,7 +7,6 @@ from road import get_roads
 
 # Add parent directory to sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from models.CameraTypeEnum import CameraType
 from database import Database
 db = Database()
 

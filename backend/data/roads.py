@@ -17,7 +17,7 @@ class Road:
                 "points": row[3]
             }
         return None
-    
+
     def get_by_names(self, names):
         """Fetch multiple suburbs by a list of names."""
         if not names:

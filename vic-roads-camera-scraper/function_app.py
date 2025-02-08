@@ -40,6 +40,7 @@ def main(myTimer: func.TimerRequest) -> None:
     }
 
     if (data["link_PHST"] == "" and data["link_SPD"] == ""):
+        logging.info(f"Both links are empty.")
         return
     
     try:
