@@ -19,8 +19,10 @@ PRIVATE_KEY = os.getenv("PRIVATE_KEY")
 @app.post("/resource-links")
 async def resource_links(data: CameraLinksPublicKey):
     try:
+        """
         if not security.verify_rsa_key_pair(data.public_key, PRIVATE_KEY):
             raise HTTPException(status_code=400, detail="Public Key is incorrect.")
+        """
 
         # Download files
         f_temp_PHST = download.download_file(data.link_PHST)
