@@ -45,8 +45,15 @@ async def resource_links(data: CameraLinksPublicKey):
 
 @app.get("/get-cameras")
 async def get_cameras() -> list[GetCamera.GetCamera]:
-    return camera.get_cameras()
+    try:
+        return camera.get_cameras()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get cameras data: {str(e)}")
+    
 
 @app.get("/")
 async def main_page(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    try:
+        return templates.TemplateResponse("index.html", {"request": request})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get main page: {str(e)}")
