@@ -25,7 +25,7 @@ def get_road_suburb_from_excel(url: str, type) -> list[tuple]:
         for row in sheet.iter_rows(min_row=3):
             if row[0].value == None:
                 break
-            list_roads_suburbs.append((double_up_apostrophe(row[0].value), double_up_apostrophe(row[1].value), type))
+            list_roads_suburbs.append((double_up_apostrophe(row[0].value), double_up_apostrophe(row[1].value), type.value))
 
         return list_roads_suburbs
     except Exception as e:

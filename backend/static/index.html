@@ -3,12 +3,13 @@
   <head>
     <title>Draw Road Segments on Google Maps</title>
     <style>
-      /* Make sure the map div fills the page */
+      /* Full-page map styles */
       #map {
         height: 100%;
         width: 100%;
       }
-      html, body {
+      html,
+      body {
         height: 100%;
         margin: 0;
         padding: 0;
@@ -33,61 +34,185 @@
         height: 10px;
         margin-right: 5px;
       }
+      /* Control Panel styles */
+      #control-panel {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 5;
+        background: white;
+        padding: 10px;
+        border: 1px solid #ccc;
+        font-family: Arial, sans-serif;
+        max-width: 300px;
+      }
+      #control-panel h2 {
+        margin-top: 0;
+      }
+      #search-input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 5px;
+        margin-bottom: 10px;
+      }
+      .toggle-option {
+        margin-bottom: 5px;
+      }
+      .toggle-option input {
+        margin-right: 5px;
+      }
+      .info-section {
+        margin-top: 10px;
+        font-size: 14px;
+      }
     </style>
-    <!-- Include the Google Maps JavaScript API -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCs97m45Iq2GHeGEqSkh39zuFaye3rn8n4"></script>
+    <!-- Include the Google Maps JavaScript API with the Places library -->
+    <script src=https://maps.googleapis.com/maps/api/js?key=AIzaSyCs97m45Iq2GHeGEqSkh39zuFaye3rn8n4&libraries=places></script>
     <script>
+      let map;
+      // Object to store the polylines for each camera type
+      let polylineGroups = {
+        1: [],
+        2: []
+      };
+ 
       async function initMap() {
         // Create the map centered on the given location
-        var map = new google.maps.Map(document.getElementById("map"), {
+        map = new google.maps.Map(document.getElementById("map"), {
           zoom: 15,
-          center: { lat: -37.8689243, lng: 144.9755534 },
+          center: { lat: -37.8689243, lng: 144.9755534 }
         });
-
-        // Fetch road data from the API
-        let response = await fetch(window.location.origin + "/get-cameras");
-        let cameraData = await response.json();
-
-        if (!cameraData || cameraData.length === 0) {
-          console.error("No camera data received from API.");
-          return;
-        }
-        
-        const cameraColors = {
-          1: "#FF0000",
-          2: "#0000FF"
-        };
-        
-        for (let camera of cameraData) {
-          let color = cameraColors[camera.camera_type];
-          let lines = JSON.parse(camera.points);
-
-          lines.forEach(segment => {
-            var roadPolyline = new google.maps.Polyline({
-              path: segment,
-              geodesic: true,
-              strokeColor: color,
-              strokeOpacity: 1.0,
-              strokeWeight: 3
-            });
-            roadPolyline.setMap(map);
+ 
+        // Set up the search box using the Places library
+        const input = document.getElementById("search-input");
+        const searchBox = new google.maps.places.SearchBox(input);
+        // Bias the SearchBox results towards the current map's viewport.
+        map.addListener("bounds_changed", () => {
+          searchBox.setBounds(map.getBounds());
+        });
+        // Listen for the event fired when the user selects a prediction.
+        searchBox.addListener("places_changed", () => {
+          const places = searchBox.getPlaces();
+          if (places.length == 0) {
+            return;
+          }
+          const bounds = new google.maps.LatLngBounds();
+          places.forEach(place => {
+            if (!place.geometry || !place.geometry.location) {
+              console.log("Returned place contains no geometry");
+              return;
+            }
+            if (place.geometry.viewport) {
+              bounds.union(place.geometry.viewport);
+            } else {
+              bounds.extend(place.geometry.location);
+            }
           });
+          map.fitBounds(bounds);
+        });
+ 
+        // Fetch camera data from the API
+        try {
+          let response = await fetch(window.location.origin + "/get-cameras");
+          let cameraData = await response.json();
+ 
+          if (!cameraData || cameraData.length === 0) {
+            console.error("No camera data received from API.");
+            return;
+          }
+ 
+          const cameraColors = {
+            1: "#FF0000", // Phone and Seat Belt Camera
+            2: "#0000FF"  // Speed Camera
+          };
+ 
+          // Loop through camera data and draw polylines
+          for (let camera of cameraData) {
+            let color = cameraColors[camera.camera_type];
+            let segments = JSON.parse(camera.points);
+ 
+            segments.forEach(segment => {
+              let roadPolyline = new google.maps.Polyline({
+                path: segment,
+                geodesic: true,
+                strokeColor: color,
+                strokeOpacity: 1.0,
+                strokeWeight: 3
+              });
+              roadPolyline.setMap(map);
+              // Store the polyline by camera type
+              if (!polylineGroups[camera.camera_type]) {
+                polylineGroups[camera.camera_type] = [];
+              }
+              polylineGroups[camera.camera_type].push(roadPolyline);
+            });
+          }
+        } catch (error) {
+          console.error("Error fetching camera data:", error);
         }
-
+ 
         // Create a legend element
-        var legend = document.createElement("div");
+        const legend = document.createElement("div");
         legend.className = "legend";
         legend.innerHTML = `
           <div><span style="background:#FF0000"></span>Phone and Seat Belt Camera</div>
           <div><span style="background:#0000FF"></span>Speed Camera</div>
         `;
-
         // Add the legend to the map
         map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(legend);
       }
+ 
+      // Toggle the visibility of polylines for a given camera type
+      function toggleCameraType(cameraType, isVisible) {
+        if (!polylineGroups[cameraType]) return;
+        polylineGroups[cameraType].forEach(polyline => {
+          polyline.setMap(isVisible ? map : null);
+        });
+      }
+ 
+      // Initialize the toggle checkbox event listeners
+      function initControls() {
+        document.getElementById("toggle-type-1").addEventListener("change", function () {
+          toggleCameraType(1, this.checked);
+        });
+        document.getElementById("toggle-type-2").addEventListener("change", function () {
+          toggleCameraType(2, this.checked);
+        });
+      }
+ 
+      // Set up the controls once the DOM is ready.
+      document.addEventListener("DOMContentLoaded", function () {
+        initControls();
+      });
     </script>
   </head>
   <body onload="initMap()">
+    <!-- Control Panel -->
+    <div id="control-panel">
+      <h2>Controls</h2>
+      <!-- Search Bar -->
+      <input id="search-input" type="text" placeholder="Search location..." />
+      <!-- Toggle Options -->
+      <div class="toggle-option">
+        <input type="checkbox" id="toggle-type-1" checked>
+        <label for="toggle-type-1">Phone and Seat Belt Camera</label>
+      </div>
+      <div class="toggle-option">
+        <input type="checkbox" id="toggle-type-2" checked>
+        <label for="toggle-type-2">Speed Camera</label>
+      </div>
+      <!-- Info Section -->
+      <div class="info-section">
+        <h3>About This Site</h3>
+        <p>This site displays road segments of camera locations in Victoria using public VIC data.</p>
+      </div>
+      <!-- Legal Section -->
+      <div class="info-section">
+        <h3>Is this legal?</h3>
+        <p>Yes, this is public VIC information.</p>
+      </div>
+    </div>
+    <!-- Map Container -->
     <div id="map"></div>
   </body>
 </html>
