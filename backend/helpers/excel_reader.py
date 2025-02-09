@@ -3,7 +3,7 @@ import requests
 import openpyxl
 from io import BytesIO
 
-def get_road_suburb_from_excel(url: str, type: CameraType) -> list[tuple]:
+def get_road_suburb_from_excel(url: str, type) -> list[tuple]:
     try:
         print("Parsing url" + url)
         # Step 1: Download the file

@@ -13,12 +13,32 @@
         margin: 0;
         padding: 0;
       }
+      /* Legend styles */
+      .legend {
+        background: white;
+        padding: 10px;
+        margin: 10px;
+        font-size: 14px;
+        font-family: Arial, sans-serif;
+        border: 1px solid #ccc;
+      }
+      .legend div {
+        display: flex;
+        align-items: center;
+        margin-bottom: 5px;
+      }
+      .legend span {
+        display: inline-block;
+        width: 20px;
+        height: 10px;
+        margin-right: 5px;
+      }
     </style>
     <!-- Include the Google Maps JavaScript API -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCs97m45Iq2GHeGEqSkh39zuFaye3rn8n4"></script>
     <script>
       async function initMap() {
-        // Create the map centered roughly on the road's area.
+        // Create the map centered on the given location
         var map = new google.maps.Map(document.getElementById("map"), {
           zoom: 15,
           center: { lat: -37.8689243, lng: 144.9755534 },
@@ -27,45 +47,44 @@
         // Fetch road data from the API
         let response = await fetch(window.location.origin + "/get-cameras");
         let cameraData = await response.json();
-        console.log(cameraData)
 
         if (!cameraData || cameraData.length === 0) {
-          console.error("No roads data received from API.");
+          console.error("No camera data received from API.");
           return;
         }
-
-        /*
-          [{
-            "id": row[0],
-            "camera_type": row[1],
-            "points": row[2],
-            "road": row[3],
-            "suburb": row[4]
-        } ...]
-        */
-
         
+        const cameraColors = {
+          1: "#FF0000",
+          2: "#0000FF"
+        };
         
         for (let camera of cameraData) {
-          console.log(camera)
-          var lines = JSON.parse(camera.points)
-          
+          let color = cameraColors[camera.camera_type];
+          let lines = JSON.parse(camera.points);
+
           lines.forEach(segment => {
-            console.log(segment);
-            // Create a polyline for the road and set its path
             var roadPolyline = new google.maps.Polyline({
               path: segment,
-              geodesic: true, // Whether to use geodesic (curved) lines
-              strokeColor: "#FF0000",
+              geodesic: true,
+              strokeColor: color,
               strokeOpacity: 1.0,
               strokeWeight: 3
             });
-
-            // Display the polyline on the map
             roadPolyline.setMap(map);
-          })
+          });
         }
-    }
+
+        // Create a legend element
+        var legend = document.createElement("div");
+        legend.className = "legend";
+        legend.innerHTML = `
+          <div><span style="background:#FF0000"></span>Speed Camera</div>
+          <div><span style="background:#0000FF"></span>Phone and Seat Belt Camera</div>
+        `;
+
+        // Add the legend to the map
+        map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(legend);
+      }
     </script>
   </head>
   <body onload="initMap()">
