@@ -63,10 +63,13 @@ def process_suburb_results(results):
     return res
 
 def get_boxes(names):
-    q = construct_suburb_query(names)
-    #print(q)
-    r = execute_overpass_query(q)
-    return process_suburb_results(r)
+    res = []
+    for i in range(0, len(names), 10):
+        q = construct_suburb_query(names[i:i + 10])
+        r = execute_overpass_query(q)
+        res = res + process_suburb_results(r)
+        time.sleep(1)
+    return res
 
 def get_roads(names, suburbs):
     res = []
@@ -100,13 +103,18 @@ def in_suburb(point, suburb):
         return False
     return True
 
-# if __name__ == "__main__":
-#     data = [
-#         {"name": "Marine Parade", "minlong": 144.970653, "minlat": -37.876291, "maxlong": 144.993262, "maxlat": -37.852189},
-#         {"name": "Chapel Street", "minlong": 144.984201, "minlat": -37.8601785, "maxlong": 145.0123174, "maxlat": -37.845688},
-#         {"name": "HAMPTON STREET", "minlong": 144.992117, "minlat": -37.946992, "maxlong": 145.025241, "maxlat": -37.92871}
-#     ]
-#     # get_roads(data)
-#     # print(get_roads(data))
-#     print(construct_road_query(data))
-#     # pprint.pprint(execute_overpass_query(q))
+if __name__ == "__main__":
+    data = [
+        {"name": "Marine Parade", "minlong": 144.970653, "minlat": -37.876291, "maxlong": 144.993262, "maxlat": -37.852189},
+        {"name": "Chapel Street", "minlong": 144.984201, "minlat": -37.8601785, "maxlong": 145.0123174, "maxlat": -37.845688},
+        {"name": "HAMPTON STREET", "minlong": 144.992117, "minlat": -37.946992, "maxlong": 145.025241, "maxlat": -37.92871}
+    ]
+    names = ["HAMPTON", "HALLS GAP"]
+    q = construct_suburb_query(names)
+    print(q)
+    r = execute_overpass_query(q)
+    print(process_suburb_results(r))
+    # get_roads(data)
+    # print(get_roads(data))
+    # print(construct_road_query(data))
+    # pprint.pprint(execute_overpass_query(q))
