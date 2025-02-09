@@ -11,19 +11,19 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from database import Database
 db = Database()
 
-def get_roads(names) -> List[Tuple[str, str]]:
+def get_roads(names: list[tuple]) -> List[Tuple[str, str]]:
     # get all roads not in db
     roads = db.road.get_by_names(names)
     found = {(r["name"], r["suburb"]) for r in roads}
 
-
     remaining_road_names = [r for r in names if r not in found]
     remaining_suburb_names = list({r[1] for r in remaining_road_names})
     remaining_suburbs = []
+
     if remaining_suburb_names != []:
         remaining_suburbs = get_suburbs(remaining_suburb_names)
     bbox = {s["name"]: s for s in remaining_suburbs}
-
+    print("PASS 4")
     # get road data for remaining roads
     remaining_road_query = [
             {
@@ -34,6 +34,7 @@ def get_roads(names) -> List[Tuple[str, str]]:
                 "minlong": bbox[r[1]]["minlong"]
             } for r in names if r not in found
         ]
+    print("PASS 5")
     # get suburbs for remaining roads
     remaining_roads = []
     if remaining_road_query != [] and remaining_suburbs != []:

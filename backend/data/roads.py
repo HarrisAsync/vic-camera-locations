@@ -19,19 +19,22 @@ class Road:
         return None
 
     def get_by_names(self, names):
-        """Fetch multiple suburbs by a list of names."""
+        """Fetch multiple suburbs by a list of (name, suburb) pairs."""
         if not names:
             return []
+
+        conditions = " OR ".join(["(name = %s AND suburb = %s)" for _ in names])
         
-        placeholders = ', '.join([str(entry) for entry in names])  # Generate placeholders for SQL query
         query = f"""
             SELECT id, name, suburb, points 
             FROM roads 
-            WHERE (name, suburb) IN ({placeholders})
+            WHERE {conditions}
         """
-        
-        rows = self.db.execute_query(query, tuple(names), fetch_all=True)
-        
+
+        flattened_names = [item for sublist in names for item in sublist]  # Flatten the list
+
+        rows = self.db.execute_query(query, tuple(flattened_names), fetch_all=True)
+
         return [
             {
                 "id": row[0],
@@ -41,6 +44,8 @@ class Road:
             }
             for row in rows
         ] if rows else []
+
+
 
     def add(self, name: str, suburb: str, points):
         """Add a new suburb to the database."""

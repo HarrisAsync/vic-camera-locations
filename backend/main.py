@@ -1,11 +1,9 @@
 from fastapi import FastAPI, HTTPException, Response, Request
 from starlette.status import HTTP_200_OK
-import os
 import dotenv
 from .helpers import security, camera, excel_reader
 from .models.CameraLinksPublicKey import CameraLinksPublicKey
 from .models.GetCamera import GetCamera
-import requests
 
 from fastapi.templating import Jinja2Templates
 from database import Database
@@ -29,12 +27,15 @@ async def resource_links(data: CameraLinksPublicKey):
         SPD_road_suburbs = excel_reader.get_road_suburb_from_excel(data.link_SPD, CameraType.PHONE)
 
         # Combine lists
-        final_list = PHST_road_suburbs + SPD_road_suburbs
+        final_list = []
+        final_list.extend(PHST_road_suburbs)
+        final_list.extend(SPD_road_suburbs)
 
         # Update cameras in the database
         camera.update_cameras(final_list)
         print("Updated!")
     except Exception as e:
+        print(e)
         raise HTTPException(status_code=500, detail=f"Failed to retrieve data: {str(e)}")
 
     return Response(status_code=HTTP_200_OK)

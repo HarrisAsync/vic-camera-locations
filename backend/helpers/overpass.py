@@ -62,6 +62,7 @@ def process_suburb_results(results):
 
 def get_boxes(names):
     q = construct_suburb_query(names)
+    #print(q)
     r = execute_overpass_query(q)
     return process_suburb_results(r)
 

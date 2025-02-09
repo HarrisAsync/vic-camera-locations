@@ -1,6 +1,5 @@
 import sys
 import os
-from typing import Dict, List
 from .road import get_roads
 
 # Add parent directory to sys.path
@@ -9,8 +8,10 @@ from database import Database
 db = Database()
 
 # [(road name, suburb, type)]
-def update_cameras(cameras):
-    roads = get_roads(list({(c[0], c[1]) for c in cameras}))
+def update_cameras(cameras: list[tuple]):
+    roads_suburbs = list({(c[0], c[1]) for c in cameras})
+    roads = get_roads(roads_suburbs)
+
     # Create a dictionary mapping (name, suburb) to id
     road_id_map = {(road["name"], road["suburb"]): road["id"] for road in roads}
 
