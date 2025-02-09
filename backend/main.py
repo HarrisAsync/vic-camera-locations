@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, Response, Request
 from starlette.status import HTTP_200_OK
+import asyncio
 import dotenv
 from .helpers import security, camera, excel_reader
 from .models.CameraLinksPublicKey import CameraLinksPublicKey
@@ -54,3 +55,11 @@ async def main_page(request: Request):
         return templates.TemplateResponse("index.html", {"request": request})
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get main page: {str(e)}")
+    
+if __name__ == "__main__":
+    c = CameraLinksPublicKey(
+        link_PHST="https://www.vic.gov.au/sites/default/files/2024-12/DDS_camera_locations_January-2025.xlsx",
+        link_SPD="https://www.vic.gov.au/sites/default/files/2024-12/Mobile_Camera_Locations_January-2025.xlsx",
+        public_key="abc123"
+    )
+    asyncio.run(resource_links(c))

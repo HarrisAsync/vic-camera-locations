@@ -4,7 +4,14 @@ import json
 import time
 import string
 from collections import defaultdict
+import sys, os
 from typing import Dict, List
+# Add parent directory to sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+# Now import the module
+from database import Database
+db = Database()
 
 def execute_overpass_query(query):
     url = "https://overpass-api.de/api/interpreter"
@@ -19,23 +26,25 @@ def construct_road_query(data):
     query += ");\nout geom;"
     return query
 
-def process_road_results(overpass_data, suburbs):
+def process_road_results(overpass_data, road_dict):
     ways = defaultdict(list)
 
     for element in overpass_data.get("elements", []):
         if element.get("type") == "way":
             tags = element.get("tags", {})
             name = tags.get("name")
+            if name not in road_dict:
+                continue
+
             geometry = element.get("geometry", [])
 
             # Only store ways that actually have a name
             if name and geometry:
-                coords = [{"lat": g["lat"], "lng": g["lon"]} for g in geometry]
-                # find associated suburb
-                for s in suburbs:
-                    if road_in_suburb(coords, s):
-                        ways[(name, s["name"])].append(coords)
-                
+                coords = []
+                for g in geometry:
+                    coords.append({"lat": g["lat"], "lng": g["lon"]})
+                if road_in_suburb(coords, road_dict[name]):
+                    ways[(name, road_dict[name]["suburb"])].append(coords)
     return ways
 
 
@@ -64,21 +73,28 @@ def process_suburb_results(results):
 
 def get_boxes(names):
     res = []
-    for i in range(0, len(names), 10):
+    for i in range(0, len(names), 20):
         q = construct_suburb_query(names[i:i + 10])
+        # print(q)
         r = execute_overpass_query(q)
         res = res + process_suburb_results(r)
-        time.sleep(1)
+        # print(res)
+        time.sleep(0.5)
     return res
 
-def get_roads(names, suburbs):
-    res = []
-    for i in range(0, len(names), 10):
+def get_roads(names):
+    print(len(names))
+    road_dict = {r["name"]: r for r in names}
+    for i in range(0, len(names), 20):
+        print(i)
         q = construct_road_query(names[i:i+10])
+        # print(names[i:i+10], i)
         r = execute_overpass_query(q)
-        res = res + process_road_results(r, suburbs)
-        time.sleep(1)
-    return res
+        roads = process_road_results(r, road_dict)
+        print("len", len(roads))
+        # print(roads)
+        db.road.add_many([{"name": k[0], "suburb": k[1], "points": points} for k, points in roads.items()])
+        time.sleep(0.5)
 
 def road_in_suburb(points, suburb):
     number_outside = 0
@@ -103,6 +119,13 @@ def in_suburb(point, suburb):
         return False
     return True
 
+def merge_dicts(d1, d2):
+    new = defaultdict(list)
+    for k, v in d1.items():
+        new[k] = v
+    for k, v in d2.items():
+        new[k] = v
+    return new
 if __name__ == "__main__":
     data = [
         {"name": "Marine Parade", "minlong": 144.970653, "minlat": -37.876291, "maxlong": 144.993262, "maxlat": -37.852189},
