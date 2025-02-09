@@ -2,6 +2,7 @@ import requests
 import pprint
 import json
 import time
+import string
 from collections import defaultdict
 from typing import Dict, List
 
@@ -14,7 +15,7 @@ def construct_road_query(data):
     query = "[out:json][timeout:25];\n("
     for row in data:
         bounding_box = f"({row['minlat']},{row['minlong']},{row['maxlat']},{row['maxlong']})"
-        query += f"  way {bounding_box}\n  [\"highway\"]\n  [\"name\"=\"{row['name']}\"];\n"
+        query += f"  way {bounding_box}\n  [\"highway\"]\n  [\"name\"=\"{string.capwords(row['name'])}\"];\n"
     query += ");\nout geom;"
     return query
 
@@ -42,7 +43,7 @@ def construct_suburb_query(suburbs, bbox=(-39.1590, 140.9617, -33.9806, 150.0133
     query = '[out:json][timeout:25];\n'
     query += '(\n'
     for suburb in suburbs:
-        query += f'  relation\n    ["boundary"="administrative"]\n    ["name"="{suburb}"]\n    ({bbox[0]}, {bbox[1]}, {bbox[2]}, {bbox[3]});\n\n'
+        query += f'  relation\n    ["boundary"="administrative"]\n    ["name"="{string.capwords(suburb)}"]\n    ({bbox[0]}, {bbox[1]}, {bbox[2]}, {bbox[3]});\n\n'
     query += ');\n'
     query += 'out bb;'
     return query
@@ -103,7 +104,7 @@ def in_suburb(point, suburb):
 #     data = [
 #         {"name": "Marine Parade", "minlong": 144.970653, "minlat": -37.876291, "maxlong": 144.993262, "maxlat": -37.852189},
 #         {"name": "Chapel Street", "minlong": 144.984201, "minlat": -37.8601785, "maxlong": 145.0123174, "maxlat": -37.845688},
-#         {"name": "Hampton Street", "minlong": 144.992117, "minlat": -37.946992, "maxlong": 145.025241, "maxlat": -37.92871}
+#         {"name": "HAMPTON STREET", "minlong": 144.992117, "minlat": -37.946992, "maxlong": 145.025241, "maxlat": -37.92871}
 #     ]
 #     # get_roads(data)
 #     # print(get_roads(data))
