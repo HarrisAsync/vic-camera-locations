@@ -23,8 +23,8 @@ async def resource_links(data: CameraLinksPublicKey):
             raise HTTPException(status_code=400, detail="Public Key is incorrect.")
         """
         # Fetch and read
-        PHST_road_suburbs = excel_reader.get_road_suburb_from_excel(data.link_PHST, CameraType.MOBILE)
-        SPD_road_suburbs = excel_reader.get_road_suburb_from_excel(data.link_SPD, CameraType.PHONE)
+        PHST_road_suburbs = excel_reader.get_road_suburb_from_excel(data.link_PHST, CameraType.PHST)
+        SPD_road_suburbs = excel_reader.get_road_suburb_from_excel(data.link_SPD, CameraType.SPD)
 
         # Combine lists
         final_list = []
