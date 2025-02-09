@@ -32,7 +32,7 @@ def get_roads(names: list[tuple]) -> List[Tuple[str, str]]:
                 "maxlat": bbox[r[1]]["maxlat"],
                 "maxlong": bbox[r[1]]["maxlong"],
                 "minlong": bbox[r[1]]["minlong"]
-            } for r in names if r not in found
+            } for r in names if (r[0], r[1]) not in found
         ]
     print("PASS 5")
     # get suburbs for remaining roads
