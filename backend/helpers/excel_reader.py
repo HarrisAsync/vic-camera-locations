@@ -1,5 +1,4 @@
 from fastapi import HTTPException
-from models.CameraTypeEnum import CameraType
 import requests
 import openpyxl
 from io import BytesIO

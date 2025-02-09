@@ -67,9 +67,12 @@ def get_boxes(names):
     return process_suburb_results(r)
 
 def get_roads(names, suburbs):
-    q = construct_road_query(names)
-    r = execute_overpass_query(q)
-    return process_road_results(r, suburbs)
+    res = []
+    for i in range(0, len(names), 10):
+        q = construct_road_query(names[i:i+10])
+        r = execute_overpass_query(q)
+        res = res + process_road_results(r, suburbs)
+    return res
 
 def road_in_suburb(points, suburb):
     number_outside = 0
