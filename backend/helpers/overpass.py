@@ -1,6 +1,7 @@
 import requests
 import pprint
 import json
+import time
 from collections import defaultdict
 from typing import Dict, List
 
@@ -72,6 +73,7 @@ def get_roads(names, suburbs):
         q = construct_road_query(names[i:i+10])
         r = execute_overpass_query(q)
         res = res + process_road_results(r, suburbs)
+        time.sleep(1)
     return res
 
 def road_in_suburb(points, suburb):
