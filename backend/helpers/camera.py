@@ -1,6 +1,7 @@
 import sys
 import os
 from .road import get_roads
+import string
 
 # Add parent directory to sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -9,6 +10,7 @@ db = Database()
 
 # [(road name, suburb, type)]
 def update_cameras(cameras: list[tuple]):
+    cameras = [(string.capwords(c[0]), string.capwords(c[1]), c[2]) for c in cameras]
     roads_suburbs = list({(c[0], c[1]) for c in cameras})
     print("getting roads")
     roads = get_roads(roads_suburbs)
