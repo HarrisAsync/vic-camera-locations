@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, Response, Request
+from fastapi.responses import FileResponse
 from starlette.status import HTTP_200_OK
 import asyncio
 import dotenv
@@ -11,7 +12,6 @@ from database import Database
 from models.CameraTypeEnum import CameraType
 
 app = FastAPI()
-templates = Jinja2Templates(directory="static")
 # db = Database()
 dotenv.load_dotenv()
 # PRIVATE_KEY = os.getenv("PRIVATE_KEY")
@@ -52,7 +52,7 @@ async def get_cameras() -> list[GetCamera]:
 @app.get("/")
 async def main_page(request: Request):
     try:
-        return templates.TemplateResponse("index.html", {"request": request})
+        return FileResponse("static/index.html")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get main page: {str(e)}")
     
