@@ -3,6 +3,7 @@ from fastapi.responses import FileResponse
 from starlette.status import HTTP_200_OK
 import asyncio
 import dotenv
+from pathlib import Path
 from .helpers import security, camera, excel_reader
 from .models.CameraLinksPublicKey import CameraLinksPublicKey
 from .models.GetCamera import GetCamera
@@ -15,6 +16,7 @@ app = FastAPI()
 # db = Database()
 dotenv.load_dotenv()
 # PRIVATE_KEY = os.getenv("PRIVATE_KEY")
+BASE_DIR = Path(__file__).resolve().parent
 
 @app.post("/resource-links")
 async def resource_links(data: CameraLinksPublicKey):
@@ -52,7 +54,8 @@ async def get_cameras() -> list[GetCamera]:
 @app.get("/")
 async def main_page(request: Request):
     try:
-        return FileResponse("static/index.html")
+        file_path = BASE_DIR / "static" / "index.html"  # Absolute path
+        return FileResponse(file_path)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get main page: {str(e)}")
     
